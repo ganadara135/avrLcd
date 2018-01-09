@@ -152,18 +152,31 @@ int main(void)
  	i++;
 	itoa(i, buff, 10);
 	printf("%s\r\n",buff);
-	delay_ms(800);
+	delay_ms(1200);
 
 	sprintf(buff,"%d",i);
 	printf("%s\r\n",buff);
-	delay_ms(800);
+	delay_ms(1200);
     printf("testing...");
-	delay_ms(800);
-	printf("$$CS\r");
-	delay_ms(800);	
-	printf("$$L0\r");
-	delay_ms(800);	
-	printf("$$L1\r");
-	delay_ms(800);
+	delay_ms(1200);
+	printf("$$CS\r");		// 화면 클리어
+	delay_ms(1200);	
+	printf("$$L0\r");		// 백라이트 off
+	delay_ms(1200);	
+	printf("$$L1\r");		// 백라이트 on
+	delay_ms(1200);
+	printf("$$BB\r");		// 커서 Blink
+	delay_ms(1200);
+	
+	/*
+	터미널 창에서 아래 명령어를 텍스트로 전송하고 ‘\r’ 을 전송하면 아래
+	의 해당 동작을 한다.
+	$$CS - 화면을 지우는 명령
+	$$B0 - 커서를 OFF 시키는 명령
+	$$B1 - 커서를 ON 시키는 명령
+	$$BB - 커서를 Blink 시키는 명령
+	$$L0 - 백라이트를 OFF 시키는 명령
+	$$L1 - 백라이트를 ON 시키는 명령
+	*/
  }
 }
