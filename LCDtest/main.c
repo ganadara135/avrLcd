@@ -16,14 +16,20 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-char buff[30];
+// 내 모듈은 16MHz 크리스탈사용, 컴파일러에게 안알려주면 1MHz 인식
+// _delay_ms()의 최대시간 16.38ms, _delay_us() 최대 시간 48us
+#define F_CPU 16000000UL          //UL unsigned long
 
+/*
+i >> x  : i의 비트열을 오른쪽으로 x만큼 이동
+i << x  : i의 비트열을 왼쪽으로 x만큼 이동
+*/
+
+char buff[30];
 
 static int Putchar(char c, FILE *stream);
 void tx0Char(char message);
 void tx1Char(char message);
-
-
 
 static int Putchar(char c, FILE *stream)
 {
@@ -50,20 +56,34 @@ void tx1Char(char message)
 
 void port_init(void)
 {
- PORTA = 0x00;
- DDRA  = 0x00;
- PORTB = 0x00;
- DDRB  = 0x00;
- PORTC = 0x00; //m103 output only
- DDRC  = 0x00;
- PORTD = 0x00;
- DDRD  = 0x00;
- PORTE = 0x00;
- DDRE  = 0x00;
- PORTF = 0x00;
- DDRF  = 0x00;
- PORTG = 0x00;
- DDRG  = 0x00;
+		/*
+		PINx  = Port x Input Pins Address : Read만 가능
+		PORTx = Port x Data Register  : x포트에서 값을 내보내거나 받을 것인지
+		DDRx  = Port x Data Direction Register : x포트를 입력으로 할 지, 출력으로 할 지
+		
+		DDRx  =  0x00 포트X 를 입력으로 설정
+		PORTx = 0x00;   PORTx 로 0 을 입력 받음
+		PORTx = 0xFF;   PORTx 로 1 을 입력 받음
+		
+		DDRx  =  0xFF  포트X 를  출력   설정
+		PORTx = 0x00;   PORTx 로 0 을 출력함
+		PORTx = 0xFF;   PORTx 로 1 을 출력함
+	*/
+		
+	 PORTA = 0x00;
+	 DDRA  = 0x00;
+	 PORTB = 0x00;
+	 DDRB  = 0x00;
+	 PORTC = 0x00; //m103 output only
+	 DDRC  = 0x00;
+	 PORTD = 0x00;
+	 DDRD  = 0x00;
+	 PORTE = 0x00;
+	 DDRE  = 0x00;
+	 PORTF = 0x00;
+	 DDRF  = 0x00;
+	 PORTG = 0x00;
+	 DDRG  = 0x00;
 }
 
 //UART0 initialize
@@ -115,8 +135,8 @@ void init_devices(void)
  EICRB = 0x00; //extended ext ints
  EIMSK = 0x00;
  TIMSK = 0x00; //timer interrupt sources
- ETIMSK = 0x00; //extended timer interrupt sources
-
+ ETIMSK = 0x00; //SREG 직접 설정 대신 모듈화 호출
+ 
  sei(); //re-enable interrupts
  //all peripherals are now initialized
 }

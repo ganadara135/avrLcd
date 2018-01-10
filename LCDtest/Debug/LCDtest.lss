@@ -176,9 +176,9 @@ void tx1Char(char message)
   de:	08 95       	ret
 
 000000e0 <Putchar>:
+static int Putchar(char c, FILE *stream);
+void tx0Char(char message);
 void tx1Char(char message);
-
-
 
 static int Putchar(char c, FILE *stream)
 {
@@ -198,38 +198,38 @@ static int Putchar(char c, FILE *stream)
   f0:	08 95       	ret
 
 000000f2 <port_init>:
-}
-
-
-void port_init(void)
-{
- PORTA = 0x00;
+		DDRx  =  0xFF  포트X 를  출력   설정
+		PORTx = 0x00;   PORTx 로 0 을 출력함
+		PORTx = 0xFF;   PORTx 로 1 을 출력함
+	*/
+		
+	 PORTA = 0x00;
   f2:	1b ba       	out	0x1b, r1	; 27
- DDRA  = 0x00;
+	 DDRA  = 0x00;
   f4:	1a ba       	out	0x1a, r1	; 26
- PORTB = 0x00;
+	 PORTB = 0x00;
   f6:	18 ba       	out	0x18, r1	; 24
- DDRB  = 0x00;
+	 DDRB  = 0x00;
   f8:	17 ba       	out	0x17, r1	; 23
- PORTC = 0x00; //m103 output only
+	 PORTC = 0x00; //m103 output only
   fa:	15 ba       	out	0x15, r1	; 21
- DDRC  = 0x00;
+	 DDRC  = 0x00;
   fc:	14 ba       	out	0x14, r1	; 20
- PORTD = 0x00;
+	 PORTD = 0x00;
   fe:	12 ba       	out	0x12, r1	; 18
- DDRD  = 0x00;
+	 DDRD  = 0x00;
  100:	11 ba       	out	0x11, r1	; 17
- PORTE = 0x00;
+	 PORTE = 0x00;
  102:	13 b8       	out	0x03, r1	; 3
- DDRE  = 0x00;
+	 DDRE  = 0x00;
  104:	12 b8       	out	0x02, r1	; 2
- PORTF = 0x00;
+	 PORTF = 0x00;
  106:	10 92 62 00 	sts	0x0062, r1	; 0x800062 <__TEXT_REGION_LENGTH__+0x7e0062>
- DDRF  = 0x00;
+	 DDRF  = 0x00;
  10a:	10 92 61 00 	sts	0x0061, r1	; 0x800061 <__TEXT_REGION_LENGTH__+0x7e0061>
- PORTG = 0x00;
+	 PORTG = 0x00;
  10e:	10 92 65 00 	sts	0x0065, r1	; 0x800065 <__TEXT_REGION_LENGTH__+0x7e0065>
- DDRG  = 0x00;
+	 DDRG  = 0x00;
  112:	10 92 64 00 	sts	0x0064, r1	; 0x800064 <__TEXT_REGION_LENGTH__+0x7e0064>
  116:	08 95       	ret
 
@@ -319,9 +319,9 @@ void init_devices(void)
  174:	17 be       	out	0x37, r1	; 55
  TIMSK = 0x00; //timer interrupt sources
  176:	10 92 7d 00 	sts	0x007D, r1	; 0x80007d <__TEXT_REGION_LENGTH__+0x7e007d>
- ETIMSK = 0x00; //extended timer interrupt sources
+ ETIMSK = 0x00; //SREG 직접 설정 대신 모듈화 호출
  17a:	78 94       	sei
-
+ 
  sei(); //re-enable interrupts
  17c:	08 95       	ret
 
