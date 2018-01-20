@@ -26,6 +26,7 @@ i << x  : i의 비트열을 왼쪽으로 x만큼 이동
 */
 
 char buff[30];
+char rx_flag=0;
 
 static int Putchar(char c, FILE *stream);
 void tx0Char(char message);
@@ -33,6 +34,7 @@ void tx1Char(char message);
 
 static int Putchar(char c, FILE *stream)
 {
+	// UART 두 개에 다 메시지를 출력함
 	tx0Char(c);
     tx1Char(c);
 	return 0;
@@ -52,6 +54,7 @@ void tx1Char(char message)
 	while (((UCSR1A>>UDRE1)&0x01) == 0) ;  // UDRE, data register empty        
     UDR1 = message;
 }
+
 
 
 void port_init(void)
@@ -95,13 +98,16 @@ void uart0_init(void)
 {
  UCSR0B = 0x00; //disable while setting baud rate
  UCSR0A = 0x00;
- UCSR0C = 0x06;
+ UCSR0C = 0x06;   // 0000_0110
  UBRR0L = 0x67; //set baud rate lo
  UBRR0H = 0x00; //set baud rate hi
- UCSR0B = 0x18;
+ //UCSR0B = 0x18;  // 수신가능
+  UCSR0B= (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
+ //UCSR0B = (1<<TXEN0);
+ //UCSR0B = (1<<RXEN0);
 }
 
-//UART1 initialize
+// UART1 initialize
 // desired baud rate:9600
 // actual baud rate:9615 (0.2%)
 // char size: 8 bit
@@ -116,6 +122,7 @@ void uart1_init(void)
  UBRR1L = 0x67; //set baud rate lo 16Mhz
  UBRR1H = 0x00; //set baud rate hi
  UCSR1B = 0x18;
+ //UCSR0B= (1<<RXEN0)|(1<<TXEN0)|(1<<RXCIE0);
 }
 
 //call this routine to initialize all peripherals
@@ -162,13 +169,46 @@ void delay_ms(int time_ms)
 }
 
 
-//
+//  CLCD 용 명령어 쓰기 함수  // 내건 SLCD 이다
+void lcd_cmd_write(char cmd){
+	PORTF = 0x00;   // RS=0, R/W=0, E=0
+	_delay_us(1);
+	PORTF^=0x04;   // E=1
+	PORTA = cmd;    // 명령어 데이터 출력
+	PORTF^= 0x04;   //  E=0
+	_delay_ms(5);	
+}
+
+//  CLCD 용 데이터 쓰기 함수  // 내건 SLCD 이다
+void lcd_data_write(char cmd){
+	PORTF = 0x01;   // RS=1, R/W=0, E=0
+	_delay_us(1);
+	PORTF^=0x04;   // E=1
+	PORTA = cmd;    // 명령어 데이터 출력
+	PORTF^= 0x04;   //  E=0
+	_delay_ms(5);
+}
+// CLCD 용으로 문자열 입력 함수와 위치 지정 함수, 초기화함수 추가 필요
+
+
+// UART0 이용한 수신
+unsigned char rx0Char(void)
+{
+	while(!(UCSR0A&(1<<RXC0))); // 데이터 수신이 완료때까지 대기ㅣ
+	rx_flag= 1;    // 수신 체크를 위한 flag
+	return UDR0;   // 수신된 데이터 리턴
+}
+
 int main(void)
 {
  int i=0;
  init_devices();
  //insert your functional code here...
+ unsigned char rx_buf;  // 수신 데이터를 받을 변수
+ 
  while(1){
+
+	 
  	i++;
 	itoa(i, buff, 10);
 	printf("%s\r\n",buff);
@@ -197,6 +237,18 @@ int main(void)
 	$$BB - 커서를 Blink 시키는 명령
 	$$L0 - 백라이트를 OFF 시키는 명령
 	$$L1 - 백라이트를 ON 시키는 명령
+	*/
+	
+	// 수신 부분 처리
+/*
+	rx_buf= rx0Char();
+	if(rx_flag){
+		rx_flag= 0;
+			 
+		//	sprintf(buff,"%d",i);
+		printf("%s\r\n",rx_buf);
+		delay_ms(2400);
+	}
 	*/
  }
 }

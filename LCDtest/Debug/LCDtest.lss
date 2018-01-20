@@ -13,21 +13,21 @@ Idx Name          Size      VMA       LMA       File off  Algn
                   CONTENTS, READONLY
   4 .note.gnu.avr.deviceinfo 0000003c  00000000  00000000  00000d30  2**2
                   CONTENTS, READONLY
-  5 .debug_aranges 00000068  00000000  00000000  00000d6c  2**0
+  5 .debug_aranges 00000080  00000000  00000000  00000d6c  2**0
                   CONTENTS, READONLY, DEBUGGING
-  6 .debug_info   00000b93  00000000  00000000  00000dd4  2**0
+  6 .debug_info   00000cdc  00000000  00000000  00000dec  2**0
                   CONTENTS, READONLY, DEBUGGING
-  7 .debug_abbrev 0000097f  00000000  00000000  00001967  2**0
+  7 .debug_abbrev 000009d0  00000000  00000000  00001ac8  2**0
                   CONTENTS, READONLY, DEBUGGING
-  8 .debug_line   000004fd  00000000  00000000  000022e6  2**0
+  8 .debug_line   000005a0  00000000  00000000  00002498  2**0
                   CONTENTS, READONLY, DEBUGGING
-  9 .debug_frame  0000011c  00000000  00000000  000027e4  2**2
+  9 .debug_frame  0000016c  00000000  00000000  00002a38  2**2
                   CONTENTS, READONLY, DEBUGGING
- 10 .debug_str    00000474  00000000  00000000  00002900  2**0
+ 10 .debug_str    000004aa  00000000  00000000  00002ba4  2**0
                   CONTENTS, READONLY, DEBUGGING
- 11 .debug_loc    00000295  00000000  00000000  00002d74  2**0
+ 11 .debug_loc    00000365  00000000  00000000  0000304e  2**0
                   CONTENTS, READONLY, DEBUGGING
- 12 .debug_ranges 00000058  00000000  00000000  00003009  2**0
+ 12 .debug_ranges 00000070  00000000  00000000  000033b3  2**0
                   CONTENTS, READONLY, DEBUGGING
 
 Disassembly of section .text:
@@ -147,210 +147,111 @@ Disassembly of section .text:
   c6:	9c cf       	rjmp	.-200    	; 0x0 <__vectors>
 
 000000c8 <tx0Char>:
-}
-
-// UART0 을 이용한 출력
-void tx0Char(char message)
+unsigned char rx0Char(void)
 {
-	while (((UCSR0A>>UDRE0)&0x01) == 0) ;  // UDRE, data register empty        
+	while(!(UCSR0A&(1<<RXC0))); // 데이터 수신이 완료때까지 대기ㅣ
+	rx_flag= 1;    // 수신 체크를 위한 flag
+	return UDR0;   // 수신된 데이터 리턴
+}
   c8:	5d 9b       	sbis	0x0b, 5	; 11
   ca:	fe cf       	rjmp	.-4      	; 0xc8 <tx0Char>
-    UDR0 = message;
   cc:	8c b9       	out	0x0c, r24	; 12
   ce:	08 95       	ret
 
 000000d0 <tx1Char>:
-}
-
-// UART1 을 이용한 출력
-void tx1Char(char message)
-{
-	while (((UCSR1A>>UDRE1)&0x01) == 0) ;  // UDRE, data register empty        
   d0:	eb e9       	ldi	r30, 0x9B	; 155
   d2:	f0 e0       	ldi	r31, 0x00	; 0
   d4:	90 81       	ld	r25, Z
   d6:	95 ff       	sbrs	r25, 5
   d8:	fd cf       	rjmp	.-6      	; 0xd4 <tx1Char+0x4>
-    UDR1 = message;
   da:	80 93 9c 00 	sts	0x009C, r24	; 0x80009c <__TEXT_REGION_LENGTH__+0x7e009c>
   de:	08 95       	ret
 
 000000e0 <Putchar>:
-static int Putchar(char c, FILE *stream);
-void tx0Char(char message);
-void tx1Char(char message);
-
-static int Putchar(char c, FILE *stream)
-{
   e0:	cf 93       	push	r28
   e2:	c8 2f       	mov	r28, r24
-	tx0Char(c);
   e4:	f1 df       	rcall	.-30     	; 0xc8 <tx0Char>
-    tx1Char(c);
   e6:	8c 2f       	mov	r24, r28
   e8:	f3 df       	rcall	.-26     	; 0xd0 <tx1Char>
-	return 0;
-      
-}
   ea:	80 e0       	ldi	r24, 0x00	; 0
   ec:	90 e0       	ldi	r25, 0x00	; 0
   ee:	cf 91       	pop	r28
   f0:	08 95       	ret
 
 000000f2 <port_init>:
-		DDRx  =  0xFF  포트X 를  출력   설정
-		PORTx = 0x00;   PORTx 로 0 을 출력함
-		PORTx = 0xFF;   PORTx 로 1 을 출력함
-	*/
-		
-	 PORTA = 0x00;
   f2:	1b ba       	out	0x1b, r1	; 27
-	 DDRA  = 0x00;
   f4:	1a ba       	out	0x1a, r1	; 26
-	 PORTB = 0x00;
   f6:	18 ba       	out	0x18, r1	; 24
-	 DDRB  = 0x00;
   f8:	17 ba       	out	0x17, r1	; 23
-	 PORTC = 0x00; //m103 output only
   fa:	15 ba       	out	0x15, r1	; 21
-	 DDRC  = 0x00;
   fc:	14 ba       	out	0x14, r1	; 20
-	 PORTD = 0x00;
   fe:	12 ba       	out	0x12, r1	; 18
-	 DDRD  = 0x00;
  100:	11 ba       	out	0x11, r1	; 17
-	 PORTE = 0x00;
  102:	13 b8       	out	0x03, r1	; 3
-	 DDRE  = 0x00;
  104:	12 b8       	out	0x02, r1	; 2
-	 PORTF = 0x00;
  106:	10 92 62 00 	sts	0x0062, r1	; 0x800062 <__TEXT_REGION_LENGTH__+0x7e0062>
-	 DDRF  = 0x00;
  10a:	10 92 61 00 	sts	0x0061, r1	; 0x800061 <__TEXT_REGION_LENGTH__+0x7e0061>
-	 PORTG = 0x00;
  10e:	10 92 65 00 	sts	0x0065, r1	; 0x800065 <__TEXT_REGION_LENGTH__+0x7e0065>
-	 DDRG  = 0x00;
  112:	10 92 64 00 	sts	0x0064, r1	; 0x800064 <__TEXT_REGION_LENGTH__+0x7e0064>
  116:	08 95       	ret
 
 00000118 <uart0_init>:
-// actual: baud rate:9615 (0.2%)
-// char size: 8 bit
-// parity: Disabled
-void uart0_init(void)
-{
- UCSR0B = 0x00; //disable while setting baud rate
  118:	1a b8       	out	0x0a, r1	; 10
- UCSR0A = 0x00;
  11a:	1b b8       	out	0x0b, r1	; 11
- UCSR0C = 0x06;
  11c:	86 e0       	ldi	r24, 0x06	; 6
  11e:	80 93 95 00 	sts	0x0095, r24	; 0x800095 <__TEXT_REGION_LENGTH__+0x7e0095>
- UBRR0L = 0x67; //set baud rate lo
  122:	87 e6       	ldi	r24, 0x67	; 103
  124:	89 b9       	out	0x09, r24	; 9
- UBRR0H = 0x00; //set baud rate hi
  126:	10 92 90 00 	sts	0x0090, r1	; 0x800090 <__TEXT_REGION_LENGTH__+0x7e0090>
- UCSR0B = 0x18;
- 12a:	88 e1       	ldi	r24, 0x18	; 24
+ 12a:	88 e9       	ldi	r24, 0x98	; 152
  12c:	8a b9       	out	0x0a, r24	; 10
  12e:	08 95       	ret
 
 00000130 <uart1_init>:
-// actual baud rate:9615 (0.2%)
-// char size: 8 bit
-// parity: Disabled
-void uart1_init(void)
-{
- UCSR1B = 0x00; //disable while setting baud rate
  130:	ea e9       	ldi	r30, 0x9A	; 154
  132:	f0 e0       	ldi	r31, 0x00	; 0
  134:	10 82       	st	Z, r1
- UCSR1A = 0x00;
  136:	10 92 9b 00 	sts	0x009B, r1	; 0x80009b <__TEXT_REGION_LENGTH__+0x7e009b>
- UCSR1C = 0x06;
  13a:	86 e0       	ldi	r24, 0x06	; 6
  13c:	80 93 9d 00 	sts	0x009D, r24	; 0x80009d <__TEXT_REGION_LENGTH__+0x7e009d>
-// UBRR1L = 0x2F; //set baud rate lo 7.3728 MHz
-// UBRR1L = 0x47; //set baud rate lo 11.0592 Mhz
- UBRR1L = 0x67; //set baud rate lo 16Mhz
  140:	87 e6       	ldi	r24, 0x67	; 103
  142:	80 93 99 00 	sts	0x0099, r24	; 0x800099 <__TEXT_REGION_LENGTH__+0x7e0099>
- UBRR1H = 0x00; //set baud rate hi
  146:	10 92 98 00 	sts	0x0098, r1	; 0x800098 <__TEXT_REGION_LENGTH__+0x7e0098>
- UCSR1B = 0x18;
  14a:	88 e1       	ldi	r24, 0x18	; 24
  14c:	80 83       	st	Z, r24
  14e:	08 95       	ret
 
 00000150 <init_devices>:
-
-//call this routine to initialize all peripherals
-void init_devices(void)
-{
- //stop errant interrupts until set up
- cli(); //disable all interrupts
  150:	f8 94       	cli
- XMCRA = 0x00; //external memory
  152:	10 92 6d 00 	sts	0x006D, r1	; 0x80006d <__TEXT_REGION_LENGTH__+0x7e006d>
- XMCRB = 0x00; //external memory
  156:	10 92 6c 00 	sts	0x006C, r1	; 0x80006c <__TEXT_REGION_LENGTH__+0x7e006c>
- port_init();
  15a:	cb df       	rcall	.-106    	; 0xf2 <port_init>
- uart0_init();
  15c:	dd df       	rcall	.-70     	; 0x118 <uart0_init>
- uart1_init();
  15e:	e8 df       	rcall	.-48     	; 0x130 <uart1_init>
  160:	60 e0       	ldi	r22, 0x00	; 0
- fdevopen(Putchar,0);
  162:	70 e0       	ldi	r23, 0x00	; 0
  164:	80 e7       	ldi	r24, 0x70	; 112
  166:	90 e0       	ldi	r25, 0x00	; 0
  168:	c6 d0       	rcall	.+396    	; 0x2f6 <fdevopen>
  16a:	15 be       	out	0x35, r1	; 53
-
- MCUCR = 0x00;
  16c:	10 92 6a 00 	sts	0x006A, r1	; 0x80006a <__TEXT_REGION_LENGTH__+0x7e006a>
- EICRA = 0x00; //extended ext ints
  170:	1a be       	out	0x3a, r1	; 58
- EICRB = 0x00; //extended ext ints
  172:	19 be       	out	0x39, r1	; 57
- EIMSK = 0x00;
  174:	17 be       	out	0x37, r1	; 55
- TIMSK = 0x00; //timer interrupt sources
  176:	10 92 7d 00 	sts	0x007D, r1	; 0x80007d <__TEXT_REGION_LENGTH__+0x7e007d>
- ETIMSK = 0x00; //SREG 직접 설정 대신 모듈화 호출
  17a:	78 94       	sei
- 
- sei(); //re-enable interrupts
  17c:	08 95       	ret
 
 0000017e <delay_us>:
  17e:	18 16       	cp	r1, r24
-
-// 시간 지연 함수
-void delay_us(int time_us)
-{
-   register int i;
-   for(i=0; i<time_us; i++){   // 4 cycle +
  180:	19 06       	cpc	r1, r25
  182:	5c f4       	brge	.+22     	; 0x19a <delay_us+0x1c>
  184:	20 e0       	ldi	r18, 0x00	; 0
  186:	30 e0       	ldi	r19, 0x00	; 0
-      asm("PUSH   R0");        // 2 cycle +
  188:	0f 92       	push	r0
-      asm("POP    R0");        // 2 cycle +
  18a:	0f 90       	pop	r0
-      asm("PUSH   R0");        // 2 cycle +
  18c:	0f 92       	push	r0
-      asm("POP    R0");        // 2 cycle +
  18e:	0f 90       	pop	r0
-
-// 시간 지연 함수
-void delay_us(int time_us)
-{
-   register int i;
-   for(i=0; i<time_us; i++){   // 4 cycle +
  190:	2f 5f       	subi	r18, 0xFF	; 255
  192:	3f 4f       	sbci	r19, 0xFF	; 255
  194:	82 17       	cp	r24, r18
@@ -359,18 +260,10 @@ void delay_us(int time_us)
  19a:	08 95       	ret
 
 0000019c <delay_ms>:
-      asm("POP    R0");        // 2 cycle   = 16 cycle = 1us for 16MHz*/
-   }
-}
-
-void delay_ms(int time_ms)
-{
  19c:	0f 93       	push	r16
  19e:	1f 93       	push	r17
  1a0:	cf 93       	push	r28
  1a2:	df 93       	push	r29
-   register int i;
-   for(i=0;i<time_ms;i++) delay_us(1000);
  1a4:	18 16       	cp	r1, r24
  1a6:	19 06       	cpc	r1, r25
  1a8:	54 f4       	brge	.+20     	; 0x1be <delay_ms+0x22>
@@ -384,7 +277,6 @@ void delay_ms(int time_ms)
  1b8:	0c 17       	cp	r16, r28
  1ba:	1d 07       	cpc	r17, r29
  1bc:	c9 f7       	brne	.-14     	; 0x1b0 <delay_ms+0x14>
-}
  1be:	df 91       	pop	r29
  1c0:	cf 91       	pop	r28
  1c2:	1f 91       	pop	r17
@@ -393,23 +285,22 @@ void delay_ms(int time_ms)
 
 000001c8 <main>:
 
-//
 int main(void)
 {
  int i=0;
  init_devices();
  1c8:	c3 df       	rcall	.-122    	; 0x150 <init_devices>
+	return UDR0;   // 수신된 데이터 리턴
+}
 
-
-//
 int main(void)
 {
  int i=0;
  1ca:	00 e0       	ldi	r16, 0x00	; 0
  1cc:	10 e0       	ldi	r17, 0x00	; 0
- init_devices();
- //insert your functional code here...
  while(1){
+
+	 
  	i++;
 	itoa(i, buff, 10);
 	printf("%s\r\n",buff);
@@ -469,11 +360,11 @@ int main(void)
  21c:	f1 e0       	ldi	r31, 0x01	; 1
  21e:	3f 2e       	mov	r3, r31
  220:	f0 2d       	mov	r31, r0
-{
- int i=0;
- init_devices();
- //insert your functional code here...
+ unsigned char rx_buf;  // 수신 데이터를 받을 변수
+ 
  while(1){
+
+	 
  	i++;
  222:	0f 5f       	subi	r16, 0xFF	; 255
  224:	1f 4f       	sbci	r17, 0xFF	; 255
